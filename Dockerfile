@@ -19,20 +19,19 @@ RUN apt-get update -y && \
       libxpm-dev libxft-dev libxext-dev \
       cuda-nvcc-12-4
 
+ARG BOOST_PYTHON_PACKAGE=boost_python_1.74.0_amd64.deb
+
 # libboost-dev includes _all_ headers, including those for boost::python, which we need to overwrite
 # two-step install: first deps with default behavior, then package itself, ignoring file overwrites
-RUN wget -q https://github.com/jvansanten/boost-python/releases/download/better-docstrings-1.74.0/boost_python_1.74.0_amd64.deb && \
-    apt-get install -y ./boost_python_1.74.0_amd64.deb -o Dpkg::Options::="--force-overwrite" && \
-    rm boost_python_1.74.0_amd64.deb
+RUN wget -q https://github.com/jvansanten/boost-python/releases/download/better-docstrings-1.74.0/${BOOST_PYTHON_PACKAGE} && \
+    apt-get install -y ./${BOOST_PYTHON_PACKAGE} -o Dpkg::Options::="--force-overwrite" && \
+    rm ${BOOST_PYTHON_PACKAGE}
 
 FROM builder as geant4
 
-# NB: geant4 provide binary packages for x86_64 only, and also only on alma9
-# e.g. https://cern.ch/geant4-data/releases/lib4.11.2.p01/Linux-g++11.4.1-Alma9.tar.gz
-
 ARG GEANT4_RELEASE=v11.2.1
 
-RUN wget https://gitlab.cern.ch/geant4/geant4/-/archive/$GEANT4_RELEASE/geant4-${GEANT4_RELEASE}.tar.gz
+RUN wget --progress=dot:giga https://gitlab.cern.ch/geant4/geant4/-/archive/$GEANT4_RELEASE/geant4-${GEANT4_RELEASE}.tar.gz
 RUN tar xzf geant4-${GEANT4_RELEASE}.tar.gz
 RUN mkdir build && cd build && \
     cmake ../geant4-${GEANT4_RELEASE} \
@@ -46,9 +45,6 @@ RUN mkdir build && cd build && \
     && cmake --build . --target install
 
 FROM builder as root
-
-# NB: root provides binary releases for x86_64 only
-# e.g. https://root.cern/download/root_v6.30.06.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
 
 ARG ROOT_RELEASE=6.30.06
 
@@ -70,3 +66,5 @@ RUN pip3 install ruff==${RUFF_VERSION}
 ARG PYBIND11_STUBGEN_VERSION=5adb2fa9bda99c76d7e5b67a7d5db3e5d9c2b987
 RUN pip3 install https://github.com/jvansanten/pybind11-stubgen/archive/${PYBIND11_STUBGEN_VERSION}.tar.gz
 RUN pip3 install pyparsing>=3 --force-reinstall
+
+COPY icetray-stubgen icetray-build /usr/local/bin/
