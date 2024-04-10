@@ -15,6 +15,7 @@ RUN apt-get update -y && \
 # explicitly install nvcc; we only need to detect and link against CUDA, not actually run anything
 RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
     dpkg -i cuda-keyring_1.1-1_all.deb && \
+    apt-get update && \
     apt-get install -y cuda-nvcc-12-4
 # libboost-dev includes _all_ headers, including those for boost::python, which we need to overwrite
 # two-step install: first deps with default behavior, then package itself, ignoring file overwrites
