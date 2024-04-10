@@ -22,7 +22,7 @@ RUN apt-get update -y && \
 # libboost-dev includes _all_ headers, including those for boost::python, which we need to overwrite
 # two-step install: first deps with default behavior, then package itself, ignoring file overwrites
 RUN wget -q https://github.com/jvansanten/boost-python/releases/download/better-docstrings-1.74.0/boost_python_1.74.0_amd64.deb && \
-    apt-get install -y boost_python_1.74.0_amd64.deb -o Dpkg::Options::="--force-overwrite" && \
+    apt-get install -y ./boost_python_1.74.0_amd64.deb -o Dpkg::Options::="--force-overwrite" && \
     rm boost_python_1.74.0_amd64.deb
 
 FROM builder as geant4
