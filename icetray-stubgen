@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+if [ $# -ne 2 ]; then
+    echo "usage: icetray-stubgen SRC_DIR BUILD_DIR" >&2
+    exit 1
+fi
+SRC_DIR=$1
+BUILD_DIR=$2
+
+$BUILD_DIR/env-shell.sh pybind11-stubgen --config $SRC_DIR/pyproject.toml -o $SRC_DIR/stubs --root-module-suffix "" --no-setup-py \
+   -i icecube.dataclasses -i icecube.phys_services -i icecube.simclasses -i icecube.recclasses -i icecube.sim_services \
+   $(find $BUILD_DIR/lib/icecube -maxdepth 1 -mindepth 1 -name '*.so' -exec basename {} \; | awk 'BEGIN {FS="."} {print "icecube."$1}')
+ruff format $SRC_DIR/stubs

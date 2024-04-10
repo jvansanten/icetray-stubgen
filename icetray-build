@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+if [ $# -ne 2 ]; then
+    echo "usage: icetray-build SRC_DIR BUILD_DIR" >&2
+    exit 1
+fi
+SRC_DIR=$1
+BUILD_DIR=$2
+
+cmake make_directory $BUILD_DIR && cd $BUILD_DIR
+ROOTSYS=/usr/local/root \
+PATH=$PATH:/usr/local/geant4/bin:/usr/local/cuda-12.4/bin \
+cmake -S $SRC_DIR -B $BUILD_DIR -GNinja -DUSE_ROOT=ON #--trace-source=CheckLanguage.cmake
+cmake --build $BUILD_DIR
