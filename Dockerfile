@@ -39,15 +39,11 @@ RUN mkdir build && cd build && \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local/geant4 \
     -DGEANT4_INSTALL_DATA=OFF \
-    -DGEANT4_BUILD_MULTITHREADED=ON \
-    -DGEANT4_USE_SYSTEM_CLHEP=OFF \
-    -DGEANT4_USE_SYSTEM_EXPAT=OFF && \
-    -DGEANT4_USE_GDML=ON \
-    -DGEANT4_USE_OPENGL_X11=OFF \
-    -DGEANT4_USE_QT=OFF \
-    -DGEANT4_USE_XM=OFF \
     -DGEANT4_BUILD_MULTITHREADED=OFF \
-    cmake --build . --target install
+    -DGEANT4_USE_SYSTEM_CLHEP=OFF \
+    -DGEANT4_USE_SYSTEM_EXPAT=ON \
+    -DGEANT4_USE_SYSTEM_ZLIB=ON \
+    && cmake --build . --target install
 
 FROM builder as root
 
@@ -56,8 +52,7 @@ FROM builder as root
 
 ARG ROOT_RELEASE=6.30.06
 
-RUN apt-get install -y libxpm libxft libxext
-RUN cd /usr/local && wget --progress=dot:giga -O - https://root.cern/download/root_v{ROOT_RELEASE}.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz | tar xzf -
+RUN cd /usr/local && wget --progress=dot:giga -O - https://root.cern/download/root_v${ROOT_RELEASE}.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz | tar xzf -
 
 FROM builder
 
