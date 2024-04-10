@@ -1,14 +1,8 @@
 FROM ubuntu:22.04 AS builder
 
-ADD boost_python_1.74.0_arm64.deb /mnt
-
-# libboost-dev includes _all_ headers, including those for boost::python, which we need to overwrite
-# two-step install: first deps with default behavior, then package itself, ignoring file overwrites
-
-# https://software.icecube.wisc.edu/icetray/main/projects/cmake/supported_platforms/ubuntu.html#full-install-recommended
-
 ENV DEBIAN_FRONTEND=noninteractive
 
+# https://software.icecube.wisc.edu/icetray/main/projects/cmake/supported_platforms/ubuntu.html#full-install-recommended
 RUN apt-get update -y && \
     apt-get install -y build-essential cmake libbz2-dev libgsl0-dev \
       libcfitsio-dev libboost-all-dev libstarlink-pal-dev libhdf5-dev \
@@ -16,8 +10,18 @@ RUN apt-get update -y && \
       python3-numpy libfftw3-dev libqt5opengl5-dev libcdk5-dev libncurses-dev \
       python3-sphinx doxygen python3-mysqldb python3-zmq python3-h5py \
       python3-pandas python3-seaborn libnlopt-dev \
-      libzmq5-dev python3-zmq opencl-dev && \
-    apt-get install -y /mnt/boost_python_*.deb -o Dpkg::Options::="--force-overwrite"
+      libzmq5-dev python3-zmq opencl-dev wget \
+      libxpm libxft libxext && \
+    # explicitly install nvcc; we only need to detect and link against CUDA, not actually run anything
+    # FIXME: adjust architecture
+    RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    apt-get install -y cuda-nvcc-12-4 && \
+    # libboost-dev includes _all_ headers, including those for boost::python, which we need to overwrite
+    # two-step install: first deps with default behavior, then package itself, ignoring file overwrites
+    wget -q https://github.com/jvansanten/boost-python/releases/download/better-docstrings-1.74.0/boost_python_1.74.0_amd64.deb && \
+      apt-get install -y boost_python_1.74.0_amd64.deb -o Dpkg::Options::="--force-overwrite" && \
+      rm boost_python_1.74.0_amd64.deb
 
 FROM builder as geant4
 
@@ -26,7 +30,6 @@ FROM builder as geant4
 
 ARG GEANT4_RELEASE=v11.2.1
 
-RUN apt-get install -y wget
 RUN wget https://gitlab.cern.ch/geant4/geant4/-/archive/$GEANT4_RELEASE/geant4-${GEANT4_RELEASE}.tar.gz
 RUN tar xzf geant4-${GEANT4_RELEASE}.tar.gz
 RUN mkdir build && cd build && \
@@ -34,8 +37,14 @@ RUN mkdir build && cd build && \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local/geant4 \
     -DGEANT4_INSTALL_DATA=OFF \
+    -DGEANT4_BUILD_MULTITHREADED=ON \
     -DGEANT4_USE_SYSTEM_CLHEP=OFF \
     -DGEANT4_USE_SYSTEM_EXPAT=OFF && \
+    -DGEANT4_USE_GDML=ON \
+    -DGEANT4_USE_OPENGL_X11=OFF \
+    -DGEANT4_USE_QT=OFF \
+    -DGEANT4_USE_XM=OFF \
+    -DGEANT4_BUILD_MULTITHREADED=OFF \
     cmake --build . --target install
 
 FROM builder as root
@@ -45,14 +54,8 @@ FROM builder as root
 
 ARG ROOT_RELEASE=6.30.06
 
-RUN apt-get install -y wget
-RUN wget --progress=dot:giga -O - https://root.cern/download/root_v${ROOT_RELEASE}.source.tar.gz | tar xzf -
-RUN apt-get install -y libxpm-dev libxft-dev libxext-dev git
-RUN mkdir build && cd build && \
-    cmake ../root-${ROOT_RELEASE} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr/local/root && \
-    cmake --build . --target install
+RUN apt-get install -y libxpm libxft libxext
+RUN cd /usr/local && wget --progress=dot:giga -O - https://root.cern/download/root_v{ROOT_RELEASE}.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz | tar xzf -
 
 FROM builder
 
@@ -70,12 +73,3 @@ RUN pip3 install ruff==${RUFF_VERSION}
 ARG PYBIND11_STUBGEN_VERSION=5adb2fa9bda99c76d7e5b67a7d5db3e5d9c2b987
 RUN pip3 install https://github.com/jvansanten/pybind11-stubgen/archive/${PYBIND11_STUBGEN_VERSION}.tar.gz
 RUN pip3 install pyparsing>=3 --force-reinstall
-
-# explicitly install nvcc; we only need to detect and link against CUDA, not actually run anything
-RUN apt-get install -y wget
-# FIXME: adjust architecture
-# RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/arm64/cuda-keyring_1.1-1_all.deb && \
-  dpkg -i cuda-keyring_1.1-1_all.deb
-RUN apt-get update
-RUN apt-get install -y cuda-nvcc-12-4
