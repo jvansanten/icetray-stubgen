@@ -3,20 +3,22 @@ FROM ubuntu:22.04 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
 
 # https://software.icecube.wisc.edu/icetray/main/projects/cmake/supported_platforms/ubuntu.html#full-install-recommended
+# explicitly install nvcc; we only need to detect and link against CUDA, not actually run anything
 RUN apt-get update -y && \
-    apt-get install -y wget build-essential cmake libbz2-dev libgsl0-dev \
+    apt-get install -y wget && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    apt-get update && \
+    apt-get install -y build-essential cmake libbz2-dev libgsl0-dev \
       libcfitsio-dev libboost-all-dev libstarlink-pal-dev libhdf5-dev \
       libzstd-dev libsuitesparse-dev libsprng2-dev liblapack-dev libhealpix-cxx-dev \
       python3-numpy libfftw3-dev libqt5opengl5-dev libcdk5-dev libncurses-dev \
       python3-sphinx doxygen python3-mysqldb python3-zmq python3-h5py \
       python3-pandas python3-seaborn libnlopt-dev \
       libzmq5-dev python3-zmq opencl-dev \
-      libxpm-dev libxft-dev libxext-dev
-# explicitly install nvcc; we only need to detect and link against CUDA, not actually run anything
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
-    dpkg -i cuda-keyring_1.1-1_all.deb && \
-    apt-get update && \
-    apt-get install -y cuda-nvcc-12-4
+      libxpm-dev libxft-dev libxext-dev \
+      cuda-nvcc-12-4
+
 # libboost-dev includes _all_ headers, including those for boost::python, which we need to overwrite
 # two-step install: first deps with default behavior, then package itself, ignoring file overwrites
 RUN wget -q https://github.com/jvansanten/boost-python/releases/download/better-docstrings-1.74.0/boost_python_1.74.0_amd64.deb && \
