@@ -9,7 +9,7 @@ RUN apt-get update -y && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
     dpkg -i cuda-keyring_1.1-1_all.deb && \
     apt-get update && \
-    apt-get install -y build-essential cmake libbz2-dev libgsl0-dev \
+    apt-get install -y build-essential cmake ninja-build libbz2-dev libgsl0-dev \
       libcfitsio-dev libboost-all-dev libstarlink-pal-dev libhdf5-dev \
       libzstd-dev libsuitesparse-dev libsprng2-dev liblapack-dev libhealpix-cxx-dev \
       python3-numpy libfftw3-dev libqt5opengl5-dev libcdk5-dev libncurses-dev \
@@ -17,7 +17,8 @@ RUN apt-get update -y && \
       python3-pandas python3-seaborn libnlopt-dev \
       libzmq5-dev python3-zmq opencl-dev \
       libxpm-dev libxft-dev libxext-dev \
-      cuda-nvcc-12-4
+      cuda-nvcc-12-4 \
+      python3-pip 
 
 ARG BOOST_PYTHON_PACKAGE=boost_python_1.74.0_amd64.deb
 
@@ -52,10 +53,18 @@ RUN cd /usr/local && wget --progress=dot:giga -O - https://root.cern/download/ro
 
 FROM builder
 
+# install photospline at top level so the Python module can be found
+ARG PHOTOSPLINE_VERSION=2.3.0
+RUN wget --progress=dot:giga https://github.com/icecube/photospline/archive/refs/tags/v${PHOTOSPLINE_VERSION}.tar.gz -O - | tar xzf - && \
+   mkdir build && \
+   cmake -S photospline-${PHOTOSPLINE_VERSION} -B build \
+     -DCMAKE_INSTALL_PREFIX=/usr/ \
+   && cmake --build build --target install \
+   && rm -r photospline-${PHOTOSPLINE_VERSION} \
+   && rm -r build
+
 COPY --from=geant4 /usr/local/geant4 /usr/local/geant4
 COPY --from=root /usr/local/root /usr/local/root
-
-RUN apt-get install -y ninja-build python3-pip
 
 ARG MYPY_VERSION=1.8
 RUN pip3 install mypy==${MYPY_VERSION}
