@@ -7,14 +7,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y && \
     apt-get install -y wget && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
-    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && rm cuda-keyring_1.1-1_all.deb && \
     apt-get update && \
     apt-get install -y build-essential cmake ninja-build libbz2-dev libgsl0-dev \
       libcfitsio-dev libboost-all-dev libstarlink-pal-dev libhdf5-dev \
       libzstd-dev libsuitesparse-dev libsprng2-dev liblapack-dev libhealpix-cxx-dev \
       python3-numpy libfftw3-dev libqt5opengl5-dev libcdk5-dev libncurses-dev \
       python3-sphinx doxygen python3-mysqldb python3-zmq python3-h5py \
-      python3-pandas python3-seaborn libnlopt-dev \
+      python3-pandas python3-seaborn libnlopt-cxx-dev \
       libzmq5-dev python3-zmq opencl-dev \
       libxpm-dev libxft-dev libxext-dev \
       cuda-nvcc-12-4 \
