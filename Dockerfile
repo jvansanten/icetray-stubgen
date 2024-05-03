@@ -90,8 +90,10 @@ RUN pip3 install mypy==${MYPY_VERSION}
 ARG RUFF_VERSION=0.1.5
 RUN pip3 install ruff==${RUFF_VERSION}
 
-ARG PYBIND11_STUBGEN_VERSION=5adb2fa9bda99c76d7e5b67a7d5db3e5d9c2b987
-RUN pip3 install https://github.com/jvansanten/pybind11-stubgen/archive/${PYBIND11_STUBGEN_VERSION}.tar.gz
+ARG PYBIND11_STUBGEN_VERSION=70afba147b6741a29560b4239093350acd894838
+RUN mkdir /pybind11-stubgen && \
+    wget -O - https://github.com/jvansanten/pybind11-stubgen/archive/${PYBIND11_STUBGEN_VERSION}.tar.gz | tar xzf - -C /pybind11-stubgen --strip-components=1 && \
+    pip3 install -e /pybind11-stubgen
 RUN pip3 install pyparsing>=3 --force-reinstall
 
 COPY icetray-stubgen icetray-build /usr/local/bin/
