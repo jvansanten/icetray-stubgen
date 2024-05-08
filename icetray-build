@@ -2,8 +2,8 @@
 
 set -e
 
-if [ $# -ne 2 ]; then
-    echo "usage: icetray-build SRC_DIR BUILD_DIR" >&2
+if [ $# -lt 2 ]; then
+    echo "usage: icetray-build SRC_DIR BUILD_DIR [CMAKE_ARGS]" >&2
     exit 1
 fi
 SRC_DIR=$1
@@ -13,4 +13,4 @@ cd $BUILD_DIR
 ROOTSYS=/usr/local/root \
 PATH=$PATH:/usr/local/geant4/bin:/usr/local/cuda-12.4/bin \
 cmake -S $SRC_DIR -B $BUILD_DIR -GNinja -DUSE_ROOT=ON
-cmake --build $BUILD_DIR
+cmake --build $BUILD_DIR ${@: 3:$#}
