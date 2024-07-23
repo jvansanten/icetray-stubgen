@@ -90,7 +90,7 @@ RUN pip3 install mypy==${MYPY_VERSION}
 ARG RUFF_VERSION=0.1.5
 RUN pip3 install ruff==${RUFF_VERSION}
 
-ARG PYBIND11_STUBGEN_VERSION=b83faa25a4a505655c833316209bef369745da45
+ARG PYBIND11_STUBGEN_VERSION=29b1a2929dc7853d6b983a4fa6b4ad86a9be3698
 RUN mkdir /pybind11-stubgen && \
     wget -O - https://github.com/jvansanten/pybind11-stubgen/archive/${PYBIND11_STUBGEN_VERSION}.tar.gz | tar xzf - -C /pybind11-stubgen --strip-components=1 && \
     pip3 install -e /pybind11-stubgen
