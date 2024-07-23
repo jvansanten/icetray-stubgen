@@ -94,6 +94,6 @@ ARG PYBIND11_STUBGEN_VERSION=97cdf1e493fb676964989c4e4228d3ed262df697
 RUN mkdir /pybind11-stubgen && \
     wget -O - https://github.com/jvansanten/pybind11-stubgen/archive/${PYBIND11_STUBGEN_VERSION}.tar.gz | tar xzf - -C /pybind11-stubgen --strip-components=1 && \
     pip3 install -e /pybind11-stubgen
-RUN pip3 install pyparsing>=3 --force-reinstall
+RUN pip3 install 'pyparsing>=3' --force-reinstall
 
 COPY icetray-stubgen icetray-build /usr/local/bin/
