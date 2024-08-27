@@ -54,6 +54,7 @@ RUN mkdir build && cd build && \
 FROM builder as root
 
 ARG ROOT_VERSION=6.30.06
+ARG TARGETPLATFORM
 
 # use binary distribution on x86_64, otherwise build from source
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
