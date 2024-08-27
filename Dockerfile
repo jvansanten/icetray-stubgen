@@ -21,8 +21,8 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; else ARCH
       python3-pandas python3-seaborn libnlopt-cxx-dev \
       libzmq5-dev python3-zmq opencl-dev \
       libxpm-dev libxft-dev libxext-dev \
-      cuda-nvcc-12-4 \
-      python3-pip 
+      cuda-nvcc-12-4 ccache \
+      python3-pip
 
 ARG BOOST_PYTHON_VERSION=1.74.0
 
@@ -95,5 +95,8 @@ RUN mkdir /pybind11-stubgen && \
     wget -O - https://github.com/jvansanten/pybind11-stubgen/archive/${PYBIND11_STUBGEN_VERSION}.tar.gz | tar xzf - -C /pybind11-stubgen --strip-components=1 && \
     pip3 install -e /pybind11-stubgen
 RUN pip3 install 'pyparsing>=3' --force-reinstall
+
+ENV CC=gcc CXX=g++ CCACHE_DIR=/ccache PATH=/usr/lib/ccache:${PATH}
+RUN ccache -M0
 
 COPY icetray-stubgen icetray-build /usr/local/bin/
