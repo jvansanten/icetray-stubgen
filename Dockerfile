@@ -49,7 +49,7 @@ RUN mkdir build && cd build && \
     -DGEANT4_USE_SYSTEM_CLHEP=OFF \
     -DGEANT4_USE_SYSTEM_EXPAT=ON \
     -DGEANT4_USE_SYSTEM_ZLIB=ON \
-    && cmake --build . -j --target install
+    && cmake --build . -j$(nproc) --target install
 
 FROM builder as root
 
