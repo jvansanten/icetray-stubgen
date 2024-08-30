@@ -21,8 +21,8 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; else ARCH
       python3-pandas python3-seaborn libnlopt-cxx-dev \
       libzmq5-dev python3-zmq opencl-dev \
       libxpm-dev libxft-dev libxext-dev \
-      cuda-nvcc-12-4 \
-      python3-pip 
+      cuda-nvcc-12-4 ccache \
+      python3-pip
 
 ARG BOOST_PYTHON_VERSION=1.74.0
 
@@ -49,11 +49,12 @@ RUN mkdir build && cd build && \
     -DGEANT4_USE_SYSTEM_CLHEP=OFF \
     -DGEANT4_USE_SYSTEM_EXPAT=ON \
     -DGEANT4_USE_SYSTEM_ZLIB=ON \
-    && cmake --build . --target install
+    && cmake --build . -j --target install
 
 FROM builder as root
 
 ARG ROOT_VERSION=6.30.06
+ARG TARGETPLATFORM
 
 # use binary distribution on x86_64, otherwise build from source
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
@@ -87,7 +88,7 @@ COPY --from=root /usr/local/root /usr/local/root
 ARG MYPY_VERSION=1.8
 RUN pip3 install mypy==${MYPY_VERSION}
 
-ARG RUFF_VERSION=0.1.5
+ARG RUFF_VERSION=0.4.10
 RUN pip3 install ruff==${RUFF_VERSION}
 
 ARG PYBIND11_STUBGEN_VERSION=14051a869e83b91bf6aab930d4799da1ebf926d1
@@ -95,5 +96,8 @@ RUN mkdir /pybind11-stubgen && \
     wget -O - https://github.com/jvansanten/pybind11-stubgen/archive/${PYBIND11_STUBGEN_VERSION}.tar.gz | tar xzf - -C /pybind11-stubgen --strip-components=1 && \
     pip3 install -e /pybind11-stubgen
 RUN pip3 install 'pyparsing>=3' --force-reinstall
+
+ENV CC=gcc CXX=g++ CCACHE_DIR=/ccache PATH=/usr/lib/ccache:${PATH}
+RUN ccache -M0
 
 COPY icetray-stubgen icetray-build /usr/local/bin/
