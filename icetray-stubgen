@@ -13,6 +13,6 @@ cd $BUILD_DIR
 rm -r $SRC_DIR/stubs/icecube/* || true
 $BUILD_DIR/env-shell.sh pybind11-stubgen --config $SRC_DIR/pyproject.toml -o $SRC_DIR/stubs --root-module-suffix "" --no-setup-py \
    -i icecube.dataclasses -i icecube.phys_services -i icecube.simclasses -i icecube.recclasses -i icecube.sim_services -i icecube.tableio \
-   $(ninja -t targets all | awk -F'(\/|\.cpython.*\.so)' '/icecube\/.*.cpython/ {print "icecube.".$5}')
+   $(ninja -t targets all | awk -F'(\/|\.cpython.*\.so)' '/icecube\/.*.cpython/ {print "icecube."$5}')
 ruff check --isolated --select PYI013,PYI029,PYI011,PYI018,I001,F401 --fix $SRC_DIR/stubs
 ruff format --isolated $SRC_DIR/stubs
