@@ -88,7 +88,7 @@ COPY --from=root /usr/local/root /usr/local/root
 ARG MYPY_VERSION=1.8
 RUN pip3 install mypy==${MYPY_VERSION}
 
-ARG RUFF_VERSION=0.4.10
+ARG RUFF_VERSION=0.1.5
 RUN pip3 install ruff==${RUFF_VERSION}
 
 ARG PYBIND11_STUBGEN_VERSION=312c45ee3b8c5f899f964f0a81c491135bf7b220
