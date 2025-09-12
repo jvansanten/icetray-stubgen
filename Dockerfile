@@ -85,6 +85,8 @@ RUN wget --progress=dot:giga https://github.com/icecube/photospline/archive/refs
 COPY --from=geant4 /usr/local/geant4 /usr/local/geant4
 COPY --from=root /usr/local/root /usr/local/root
 
+RUN apt-get install -y libsqlite3-dev
+
 ARG MYPY_VERSION=1.8
 RUN pip3 install mypy==${MYPY_VERSION}
 
