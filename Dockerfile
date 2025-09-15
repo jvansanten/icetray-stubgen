@@ -87,7 +87,7 @@ COPY --from=root /usr/local/root /usr/local/root
 
 RUN apt-get install -y libsqlite3-dev
 
-ARG MYPY_VERSION=1.8
+ARG MYPY_VERSION=1.18.1
 RUN pip3 install mypy==${MYPY_VERSION}
 
 ARG RUFF_VERSION=0.1.5
